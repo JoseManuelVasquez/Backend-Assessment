@@ -10,6 +10,11 @@ var USER_CONSTANTS = require('../constants/user');
  */
 exports.loginRequired = loginRequired;
 function loginRequired (wrapped, req, res) {
+    /* If there's not function to call */
+    if (!wrapped) {
+        return;
+    }
+
     let token = req.body.token || req.query.token || req.headers['x-access-token'];
 
     if (!token) {
@@ -17,13 +22,13 @@ function loginRequired (wrapped, req, res) {
             success: false,
             error: "Token shouldn't be empty"
         });
-        return wrapped;
+        return;
     }
 
     jwt.verify(token, process.env.JWT_SECRET, function (err, decodedToken) {
         if (err) {
             res.json(err);
-            return wrapped;
+            return;
         }
 
         User.findOne({_id: decodedToken.id}).then(function (user, err) {
@@ -32,7 +37,7 @@ function loginRequired (wrapped, req, res) {
                     success: false,
                     error: "Database error"
                 });
-                return wrapped;
+                return;
             }
 
             if (!user) {
@@ -40,15 +45,13 @@ function loginRequired (wrapped, req, res) {
                     success: false,
                     error: "User not found"
                 });
-                return wrapped;
+                return;
             }
 
             /* Call wrapped function */
             wrapped(req, res);
         });
     });
-
-    return wrapped;
 }
 
 /**
@@ -59,12 +62,17 @@ function loginRequired (wrapped, req, res) {
  */
 exports.adminRequired = adminRequired;
 function adminRequired (wrapped, req, res) {
+    /* If there's not function to call */
+    if (!wrapped) {
+        return;
+    }
+
     let token = req.body.token || req.query.token || req.headers['x-access-token'];
 
     jwt.verify(token, process.env.JWT_SECRET, function (err, decodedToken) {
         if (err) {
             res.json(err);
-            return wrapped;
+            return;
         }
 
         User.findOne({_id: decodedToken.id}).then(function (user, err) {
@@ -73,20 +81,19 @@ function adminRequired (wrapped, req, res) {
                     success: false,
                     error: "Database error"
                 });
-                return wrapped;
+                return;
             }
 
-            if (user.permissionType !== USER_CONSTANTS.ROLE.admin) {
+            if (user.role !== USER_CONSTANTS.ROLE.admin) {
                 res.json({
                     success: false,
                     error: "You are not granted to modify user permission"
                 });
-                return wrapped;
+                return;
             }
 
             /* Call wrapped function */
             wrapped(req, res);
         });
     });
-    return wrapped;
 }

@@ -26,8 +26,15 @@ var UserSchema = new mongoose.Schema({
         type: String
     },
     role: {
-        type: String
-    }/*,
+        type: String,
+        required: true
+    }
+    /*
+    This zombie code is for showing what would happen
+    if we can store remote service data in our database,
+    we depend entirely of remote API, so this is just an
+    example Schema in MongoDB
+    ,
     policies: [{
         id: String,
         policy: {
