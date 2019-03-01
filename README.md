@@ -3,6 +3,13 @@ Backend developer assessment exercise
 
 Due to the ambiguity of the exercise, these are the calls to the API.
 
+### Server Requiremets
+
+- NodeJS
+- Npm
+- Git
+- Mongo
+
 ### Using server
 
 Host: http://localhost:3000

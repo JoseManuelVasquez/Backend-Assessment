@@ -9,9 +9,9 @@ var USER_CONSTANTS = require('../constants/user');
  * @param res
  */
 exports.loginRequired = loginRequired;
-function loginRequired (wrapped, req, res) {
+function loginRequired (wrapper, req, res) {
     /* If there's not function to call */
-    if (!wrapped) {
+    if (!wrapper) {
         return;
     }
 
@@ -49,7 +49,7 @@ function loginRequired (wrapped, req, res) {
             }
 
             /* Call wrapped function */
-            wrapped(req, res);
+            wrapper(req, res);
         });
     });
 }
@@ -61,9 +61,9 @@ function loginRequired (wrapped, req, res) {
  * @param res
  */
 exports.adminRequired = adminRequired;
-function adminRequired (wrapped, req, res) {
+function adminRequired (wrapper, req, res) {
     /* If there's not function to call */
-    if (!wrapped) {
+    if (!wrapper) {
         return;
     }
 
@@ -93,7 +93,7 @@ function adminRequired (wrapped, req, res) {
             }
 
             /* Call wrapped function */
-            wrapped(req, res);
+            wrapper(req, res);
         });
     });
 }
