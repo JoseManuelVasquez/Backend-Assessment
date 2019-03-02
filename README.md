@@ -1,3 +1,5 @@
+<img src="https://img.shields.io/npm/l/vue.svg" alt="License">
+
 # Backend-Assessment
 Backend developer assessment exercise
 
@@ -55,11 +57,11 @@ Response
 
 - Get user data:
 
-```GET /user/get-data?id=String?token=String```
+```GET /user/get-data?id=String&token=String```
 
 or
 
-```GET /user/get-data?name=String?token=String```
+```GET /user/get-data?name=String&token=String```
 
 Response
 ```
@@ -74,7 +76,7 @@ Response
 }
 ```
 
-- Get user policies: ```GET /user/get-policies?name=String?token=String```
+- Get user policies: ```GET /user/get-policies?name=String&token=String```
 
 Response
 ```
@@ -94,7 +96,7 @@ Response
 }
 ```
 
-- Get user by policy ID: ```GET /user/get-user-policy?policy=String?token=String```
+- Get user by policy ID: ```GET /user/get-user-policy?policy=String&token=String```
 
 Response
 ```
