@@ -1,8 +1,6 @@
 # Backend-Assessment
 Backend developer assessment exercise
 
-Due to the ambiguity of the exercise, these are the calls to the API.
-
 ### Server Requiremets
 
 - NodeJS
@@ -68,7 +66,6 @@ Response
 {
     "success": Boolean,
     "client": {
-      "success": Boolean,
       "id": String,
       "name": String,
       "email": String,
@@ -77,7 +74,7 @@ Response
 }
 ```
 
-- Get user data: ```GET /user/get-data?name=String?token=String```
+- Get user policies: ```GET /user/get-policies?name=String?token=String```
 
 Response
 ```
@@ -94,5 +91,20 @@ Response
         },
         ...
     ]
+}
+```
+
+- Get user by policy ID: ```GET /user/get-user-policy?policy=String?token=String```
+
+Response
+```
+{
+    "success": Boolean,
+    "client": {
+          "id": String,
+          "name": String,
+          "email": String,
+          "role": String
+        }
 }
 ```

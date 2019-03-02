@@ -3,18 +3,14 @@ var jwt = require('jsonwebtoken');
 var USER_CONSTANTS = require('../constants/user');
 
 /**
- * Login required decorator, using token already created
- * @param wrapped
+ * Login required, using token already created
+ * @param wrapper
  * @param req
  * @param res
  */
 exports.loginRequired = loginRequired;
-function loginRequired (wrapper, req, res) {
-    /* If there's not function to call */
-    if (!wrapper) {
-        return;
-    }
-
+function loginRequired (req, res) {
+    /* Token provided by user */
     let token = req.body.token || req.query.token || req.headers['x-access-token'];
 
     if (!token) {
@@ -48,25 +44,20 @@ function loginRequired (wrapper, req, res) {
                 return;
             }
 
-            /* Call wrapped function */
-            wrapper(req, res);
+            return true;
         });
     });
 }
 
 /**
- * Admin required decorator, using token already created
- * @param wrapped
+ * Admin required, using token already created
+ * @param wrapper
  * @param req
  * @param res
  */
 exports.adminRequired = adminRequired;
-function adminRequired (wrapper, req, res) {
-    /* If there's not function to call */
-    if (!wrapper) {
-        return;
-    }
-
+function adminRequired (req, res) {
+    /* Token provided by user */
     let token = req.body.token || req.query.token || req.headers['x-access-token'];
 
     jwt.verify(token, process.env.JWT_SECRET, function (err, decodedToken) {
@@ -89,11 +80,46 @@ function adminRequired (wrapper, req, res) {
                     success: false,
                     error: "You are not granted to modify user permission"
                 });
-                return;
-            }
 
-            /* Call wrapped function */
-            wrapper(req, res);
+                return true;
+            }
         });
     });
+}
+
+/**
+ * Auxiliar function for finding an element
+ * @param {Array} arrayJSON
+ * @param {String} key
+ * @param {String} value
+ * @returns {Object}
+ */
+exports.findElement = findElement;
+function findElement(arrayJSON, key, value) {
+    for (let i=0; i < arrayJSON.length; i++)
+        if (arrayJSON[i][key] === value)
+            return arrayJSON[i];
+
+    return {};
+}
+
+/**
+ * Auxiliar function for finding various elements
+ * @param {Array} arrayJSON
+ * @param {String} key
+ * @param {String} value
+ * @returns {Array}
+ */
+exports.findElements = findElements;
+function findElements(arrayJSON, key, value) {
+
+    let elements = [];
+
+    for (let i=0; i < arrayJSON.length; i++) {
+        if (arrayJSON[i][key] === value) {
+            elements.push(arrayJSON[i]);
+        }
+    }
+
+    return elements;
 }

@@ -5,8 +5,10 @@ var http = require('http');
 /* Dependencies in project */
 var User = require('../models/User');
 var USER_CONSTANTS = require('../constants/user');
-var loginRequired = require('../decorators/user').loginRequired;
-var adminRequired = require('../decorators/user').adminRequired;
+var loginRequired = require('../tools/user').loginRequired;
+var adminRequired = require('../tools/user').adminRequired;
+var findElement = require('../tools/user').findElement;
+var findElements = require('../tools/user').findElements;
 
 /**
  * POST Method for creating a new user
@@ -123,8 +125,10 @@ function login(req, res) {
  * @param {Object} res
  */
 exports.getUserData = function (req, res) {
-    /* Decorator */
-    loginRequired(getUserData, req, res);
+    /* Login required */
+    if (loginRequired(req, res)) return;
+
+    getUserData(req, res);
 };
 function getUserData(req, res) {
 
@@ -192,8 +196,11 @@ function getUserData(req, res) {
  * @param {Object} res
  */
 exports.getPoliciesUser = function (req, res) {
-    /* Decorators */
-    loginRequired(adminRequired(getPoliciesUser, req, res), req, res);
+    /* Login and Admin required */
+    if (loginRequired(req, res)) return;
+    if (adminRequired(req, res)) return;
+
+    getPoliciesUser(req, res);
 };
 function getPoliciesUser(req, res) {
 
@@ -279,36 +286,97 @@ function getPoliciesUser(req, res) {
 }
 
 /**
- * Auxiliar function for finding an element
- * @param {Array} arrayJSON
- * @param {String} key
- * @param {String} value
- * @returns {Object}
+ * GET Method for listing user data
+ * @function
+ * @param {Object} req
+ * @param {Object} res
  */
-function findElement(arrayJSON, key, value) {
-    for (let i=0; i < arrayJSON.length; i++)
-        if (arrayJSON[i][key] === value)
-            return arrayJSON[i];
+exports.getUserByPolicy = function (req, res) {
+    /* Login and Admin required */
+    if (loginRequired(req, res)) return;
+    if (adminRequired(req, res)) return;
 
-    return {};
-}
+    getUserByPolicy(req, res);
+};
+function getUserByPolicy(req, res) {
 
-/**
- * Auxiliar function for finding various elements
- * @param {Array} arrayJSON
- * @param {String} key
- * @param {String} value
- * @returns {Array}
- */
-function findElements(arrayJSON, key, value) {
+    /* GET Argument */
+    let policyNumber = req.query.policy;
 
-    let elements = [];
-
-    for (let i=0; i < arrayJSON.length; i++) {
-        if (arrayJSON[i][key] === value) {
-            elements.push(arrayJSON[i]);
-        }
+    if (!policyNumber) {
+        res.json({
+            success: false,
+            error: "Parameters shouldn't be empty"
+        });
+        return;
     }
 
-    return elements;
+    /* Request options for finding User */
+    let optionsUser = {
+        host: USER_CONSTANTS.EXTERNAL_API.host,
+        port: USER_CONSTANTS.EXTERNAL_API.port,
+        path: '/v2/5808862710000087232b75ac',
+        method: 'GET'
+    };
+
+    /* Request options for finding Policies */
+    let optionsPolicy = {
+        host: USER_CONSTANTS.EXTERNAL_API.host,
+        port: USER_CONSTANTS.EXTERNAL_API.port,
+        path: '/v2/580891a4100000e8242b75c5',
+        method: 'GET'
+    };
+
+    /* API Call */
+    http.request(optionsPolicy, function (response) {
+        response.setEncoding('utf8');
+
+        let policyData = '';
+
+        response.on('data', function (data) {
+            policyData += data;
+        });
+
+        response.on('end', function () {
+            if (policyData) {
+                treatData(JSON.parse(policyData));
+                return;
+            }
+
+            treatData({});
+        });
+    }).end();
+
+    /* Function called for getting data, */
+    /* once API Call successfully worked */
+    var treatData = function (data) {
+
+        let clientId = findElement(data['policies'], 'id', policyNumber).clientId;
+
+        /* API Call for policy */
+        http.request(optionsUser, function (response) {
+            response.setEncoding('utf8');
+
+            let userData = '';
+
+            response.on('data', function (data) {
+                userData += data;
+            });
+
+            response.on('end', function () {
+                if (userData) {
+                    let clients = JSON.parse(userData);
+                    let user = findElements(clients['clients'], 'id', clientId);
+
+                    res.json({
+                        success: true,
+                        client: user
+                    });
+                    return;
+                }
+
+                res.json([]);
+            });
+        }).end();
+    };
 }
