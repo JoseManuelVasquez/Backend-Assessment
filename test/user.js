@@ -1,6 +1,5 @@
 /* 3d party libraries */
 var chai = require('chai');
-var mongoose = require("mongoose");
 var chaiHttp = require('chai-http');
 var should = chai.should();
 
@@ -9,8 +8,10 @@ var server = require('../bin/www');
 var User = require('../models/User');
 
 /* URL for testing API */
-const SIGNUP_URL = "/user/signup";
-const LOGIN_URL = "/user/login";
+const SIGNUP_URL = '/user/signup';
+const LOGIN_URL = '/user/login';
+const GET_DATA_URL = '/user/get-data';
+const GET_USER_POLICIES_URL = '/user/get-policies';
 
 /* Using chai*/
 chai.use(chaiHttp);
@@ -102,14 +103,91 @@ describe("\n\nIn the controllers/user.js", () => {
                     done();
                 });
         });
+    });
 
-        it("inexistent user should return a user not found", (done) => {
+    /* GET /user/get-data TEST */
+    describe("GET /user/get-data", () => {
+
+        it("should return specific user using ID or Name", (done) => {
+            /* First of all we've to login */
             chai.request(server)
                 .post(LOGIN_URL)
                 .send(existentUser)
                 .end((error, response) => {
-                    response.body.success.should.be.eql(false);
-                    response.body.message.should.be.a('String');
+                    let token = response.body.token;
+                    let existingUserID = 'a0ece5db-cd14-4f21-812f-966633e7be86';
+                    let existingUserName = 'Manning';
+
+                    /* Call API for user data using ID */
+                    chai.request(server)
+                        .get(GET_DATA_URL)
+                        .query({id: existingUserID, token: token}) /** Params of GET query */
+                        .end((error, response) => {
+                            response.should.have.status(200);
+                            response.body.should.have.property('success').eql(true);
+                            response.body.should.have.property('client').id.eql(existingUserID);
+                        });
+
+                    /* Call API for user data using name */
+                    chai.request(server)
+                        .get(GET_DATA_URL)
+                        .query({name: existingUserName, token: token}) /** Params of GET query */
+                        .end((error, response) => {
+                            response.should.have.status(200);
+                            response.body.should.have.property('success').eql(true);
+                            response.body.should.have.property('client').name.eql(existingUserName);
+                        });
+
+                    done();
+                });
+        });
+    });
+
+    /* GET /user/get-policies TEST */
+    describe("GET /user/get-policies", () => {
+
+        it("should return user policies, only if admin called API", (done) => {
+            /* First of all we've to login */
+            chai.request(server)
+                .post(LOGIN_URL)
+                .send(existentUser)
+                .end((error, response) => {
+                    let token = response.body.token;
+                    let existingUserName = 'Manning';
+
+                    /* Call API for user policies */
+                    chai.request(server)
+                        .get(GET_USER_POLICIES_URL)
+                        .query({name: existingUserName, token: token}) /** Params of GET query */
+                        .end((error, response) => {
+                            response.should.have.status(200);
+                            response.body.should.have.property('success').eql(true);
+                            response.body.should.have.property('policies');
+                        });
+
+                    done();
+                });
+        });
+
+        it("should return error if normal user called API", (done) => {
+            /* First of all we've to login as normal user */
+            chai.request(server)
+                .post(LOGIN_URL)
+                .send(newUser)
+                .end((error, response) => {
+                    let token = response.body.token;
+                    let existingUserName = 'Manning';
+
+                    /* Call API for user policies */
+                    chai.request(server)
+                        .get(GET_USER_POLICIES_URL)
+                        .query({name: existingUserName, token: token}) /** Params of GET query */
+                        .end((error, response) => {
+                            response.should.have.status(200);
+                            response.body.should.have.property('success').eql(true);
+                            response.body.should.have.property('policies');
+                        });
+
                     done();
                 });
         });

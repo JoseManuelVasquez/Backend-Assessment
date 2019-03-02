@@ -4,9 +4,8 @@ var USER_CONSTANTS = require('../constants/user');
 
 /**
  * Login required, using token already created
- * @param wrapper
- * @param req
- * @param res
+ * @param {Object} req
+ * @param {Object} res
  */
 exports.loginRequired = loginRequired;
 function loginRequired (req, res) {
@@ -51,9 +50,8 @@ function loginRequired (req, res) {
 
 /**
  * Admin required, using token already created
- * @param wrapper
- * @param req
- * @param res
+ * @param {Object} req
+ * @param {Object} res
  */
 exports.adminRequired = adminRequired;
 function adminRequired (req, res) {

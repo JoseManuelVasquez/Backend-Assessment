@@ -366,7 +366,7 @@ function getUserByPolicy(req, res) {
             response.on('end', function () {
                 if (userData) {
                     let clients = JSON.parse(userData);
-                    let user = findElements(clients['clients'], 'id', clientId);
+                    let user = findElement(clients['clients'], 'id', clientId);
 
                     res.json({
                         success: true,
@@ -375,7 +375,10 @@ function getUserByPolicy(req, res) {
                     return;
                 }
 
-                res.json([]);
+                res.json({
+                    success: false,
+                    error: 'User not found using policy ID'
+                });
             });
         }).end();
     };
